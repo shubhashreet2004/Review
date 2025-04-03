@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-ecommerce
+  labels:
+    app: react-ecommerce
+spec:
+  replicas: 2  # Adjust replicas as needed
+  selector:
+    matchLabels:
+      app: react-ecommerce
+  template:
+    metadata:
+      labels:
+        app: react-ecommerce
+    spec:
+      containers:
+        - name: react-ecommerce
+          image: shubhashree1311/review:latest  # Replace with your built Docker image
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-ecommerce-service
+spec:
+  selector:
+    app: react-ecommerce
+  ports:
+    - protocol: TCP
+      port: 80  # Port exposed by the service
+      targetPort: 80  # Port exposed inside the container
+  type: ClusterIP  # Use NodePort for external access if needed
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: react-ecommerce-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: react-ecommerce.local  # Change this to your domain or IP
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: react-ecommerce-service
+                port:
+                  number: 80
