@@ -5,4 +5,3 @@
     docker login -u shubhashree1311 -p shubha@1311
     docker tag test shubhashree1311/review
     docker push shubhashree1311/review
-    docker-compose up -d
